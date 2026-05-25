@@ -286,4 +286,4 @@ with tabs[0]:
         st.markdown("<p style='color:#2563EB; font-size:13px; font-weight:600; cursor:pointer;'>View all recommendations →</p>", unsafe_html=True)
 
 
-Fix Python 3.14 string type error
+
