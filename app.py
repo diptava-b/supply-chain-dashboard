@@ -12,8 +12,8 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS to mimic the exact layout, deep red headers, and card stylings
-st.markdown("""
+# Using raw string block to prevent Python 3.14 string formatting TypeErrors
+css_style = r"""
 <style>
     /* Top Bar Styling */
     .header-container {
@@ -96,7 +96,8 @@ st.markdown("""
         letter-spacing: 0.5px;
     }
 </style>
-""", unsafe_html=True)
+"""
+st.markdown(css_style, unsafe_html=True)
 
 # ==========================================
 # 2. HEADER & NAVIGATION TABS
@@ -109,8 +110,8 @@ st.markdown("""
 """, unsafe_html=True)
 
 tabs = st.tabs([
-    "📈 Executive Overview", "💧 Waste Leakage", "📦 Inventory Intelligence", 
-    "🔄 Returns Intelligence", "🌐 Network Optimization", "🗼 Control Tower", "🔮 What-if Simulation"
+    "Executive Overview", "Waste Leakage", "Inventory Intelligence", 
+    "Returns Intelligence", "Network Optimization", "Control Tower", "What-if Simulation"
 ])
 
 # All code renders inside the first tab to mimic the dashboard view
@@ -119,7 +120,6 @@ with tabs[0]:
     # ==========================================
     # 3. INTERACTIVE FILTERS
     # ==========================================
-    # Creating layout rows for the dashboard filters
     f1, f2, f3, f4, f5, f6, f7, f8 = st.columns([1.2, 1, 1, 1, 1, 1, 1.5, 0.8])
     
     with f1: time_period = st.selectbox("Time Period", ["May 2024", "Apr 2024", "Mar 2024"])
@@ -130,7 +130,7 @@ with tabs[0]:
     with f6: store = st.selectbox("Store", ["All Stores", "Manchester Depot", "London Hub"])
     with f7: sku = st.selectbox("SKU / Product", ["All Products", "High-Volume Items", "Perishables"])
     with f8: 
-        st.write("") # Spacer
+        st.write("") 
         st.write("")
         clear_filters = st.button("Clear Filters", use_container_width=True)
 
@@ -142,7 +142,7 @@ with tabs[0]:
     # ==========================================
     # 4. LIVE ALERTS BANNER
     # ==========================================
-    st.markdown(f"""
+    st.markdown("""
     <div class="alert-banner">
         <span class="alert-tag">⚡ LIVE ALERTS</span>
         <span style="color:#B45309; font-weight:600; margin-right:5px;">⚠️ MEDIUM</span> Return spike in Electronics category <span style="color:#64748B;">32% increase vs last month</span>
@@ -200,16 +200,15 @@ with tabs[0]:
             <div class="kpi-delta-neg">▲ +4.4K <span style="color:#64748B; font-weight:normal;">vs Apr</span></div>
         </div>""", unsafe_html=True)
 
-    st.write("") # Padding
+    st.write("") 
 
     # ==========================================
     # 6. CHARTS & ANALYTICS WORKSPACE
     # ==========================================
     col_left, col_right = st.columns([4, 6])
 
-    # --- LEFT COLUMN: TREND & TOP CATEGORIES ---
+    # --- LEFT COLUMN ---
     with col_left:
-        # Waste Leakage Trend Line/Area Chart
         st.markdown("### Waste Leakage Trend 🛈")
         months = ['Dec 2023', 'Jan 2024', 'Feb 2024', 'Mar 2024', 'Apr 2024', 'May 2024']
         leakage_vals = [22, 24, 23, 26, 25, 28.4 * multiplier]
@@ -222,23 +221,18 @@ with tabs[0]:
         fig_trend.update_layout(
             yaxis=dict(title='Waste Leakage (£M)', gridcolor='#F1F5F9'),
             yaxis2=dict(title='As % of Revenue', overlaying='y', side='right'),
-            margin=dict(l=40, r=40, t=10, b=10),
-            height=240,
-            hovermode="x unified",
+            margin=dict(l=40, r=40, t=10, b=10), height=240, hovermode="x unified",
             legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5),
             plot_bgcolor='white', paper_bgcolor='white'
         )
         st.plotly_chart(fig_trend, use_container_width=True, config={'displayModeBar': False})
-        
         st.markdown("<p style='color:#2563EB; font-size:13px; font-weight:600; cursor:pointer;'>View detailed trend →</p>", unsafe_html=True)
         st.write("")
 
-        # Top Waste Categories Horizontal Bar Chart
         st.markdown(f"### Top Waste Categories <span style='font-size:12px; color:#64748B;'>{time_period} | £M</span>", unsafe_html=True)
         cats = ['Fashion', 'Others', 'Home & Li...', 'Electronics', 'Food (Am...)', 'Food (Fresh)'][::-1]
         vals = [2.1, 2.5, 3.2, 4.3, 6.1, 10.2]
         
-        # Filter chart data dynamically if a specific category option is picked
         if category != "All":
             cats = [category]
             vals = [10.2 * multiplier]
@@ -252,11 +246,9 @@ with tabs[0]:
         st.plotly_chart(fig_cats, use_container_width=True, config={'displayModeBar': False})
         st.markdown("<p style='color:#2563EB; font-size:13px; font-weight:600; cursor:pointer;'>View all categories →</p>", unsafe_html=True)
 
-
-    # --- RIGHT COLUMN: STAGE BREAKDOWN & AI INSIGHTS ---
+    # --- RIGHT COLUMN ---
     with col_right:
         st.markdown(f"### Supply Chain Waste Breakdown by Stage <span style='font-size:12px; color:#64748B;'>{time_period} | Net Waste vs Recovered (£M)</span>", unsafe_html=True)
-        
         stages = ['Suppliers', 'Manufacturing', 'Depots', 'Fulfilment Centres', 'Stores / Dark Stores', 'Returns & Reverse Flow'][::-1]
         net_waste = [20.3, 14.8, 16.5, 5.0, 4.2, 1.2][::-1]
         recovered = [4.1, 3.2, 5.1, 1.2, 2.5, 18.3][::-1]
@@ -266,82 +258,32 @@ with tabs[0]:
         fig_stages.add_trace(go.Bar(y=stages, x=recovered, name='Recovered', orientation='h', marker_color='#10B981'))
         
         fig_stages.update_layout(
-            barmode='stack',
-            margin=dict(l=10, r=20, t=10, b=10), height=270,
+            barmode='stack', margin=dict(l=10, r=20, t=10, b=10), height=270,
             legend=dict(orientation="h", yanchor="bottom", y=1, xanchor="right", x=1),
-            plot_bgcolor='white', paper_bgcolor='white',
-            xaxis=dict(gridcolor='#F1F5F9')
+            plot_bgcolor='white', paper_bgcolor='white', xaxis=dict(gridcolor='#F1F5F9')
         )
         st.plotly_chart(fig_stages, use_container_width=True, config={'displayModeBar': False})
         
-        # AI Optimization Insights Grid
         st.markdown("### AI Optimization Insights")
-        
         r1_c1, r1_c2, r1_c3 = st.columns(3)
         with r1_c1:
-            st.markdown("""
-            <div class="insight-card" style="background-color: #F0FDF4;">
-                <div style="font-weight: 600; color: #166534; font-size:13px;">🟢 Reallocate slow moving stock from Manchester Depot</div>
-                <div style="margin-top:20px;">
-                    <div class="insight-saving" style="color: #166534;">£1.8M</div>
-                    <div class="insight-label">Potential Waste Reduction</div>
-                </div>
-            </div>
-            """, unsafe_html=True)
+            st.markdown("""<div class="insight-card" style="background-color: #F0FDF4;"><div style="font-weight: 600; color: #166534; font-size:13px;">🟢 Reallocate slow moving stock from Manchester Depot</div><div style="margin-top:20px;"><div class="insight-saving" style="color: #166534;">£1.8M</div><div class="insight-label">Potential Waste Reduction</div></div></div>""", unsafe_html=True)
         with r1_c2:
-            st.markdown("""
-            <div class="insight-card" style="background-color: #EFF6FF;">
-                <div style="font-weight: 600; color: #1E40AF; font-size:13px;">🔵 Reduce return cycle time for Electronics</div>
-                <div style="margin-top:20px;">
-                    <div class="insight-saving" style="color: #1E40AF;">£2.3M</div>
-                    <div class="insight-label">Potential Recovery Improvement</div>
-                </div>
-            </div>
-            """, unsafe_html=True)
+            st.markdown("""<div class="insight-card" style="background-color: #EFF6FF;"><div style="font-weight: 600; color: #1E40AF; font-size:13px;">🔵 Reduce return cycle time for Electronics</div><div style="margin-top:20px;"><div class="insight-saving" style="color: #1E40AF;">£2.3M</div><div class="insight-label">Potential Recovery Improvement</div></div></div>""", unsafe_html=True)
         with r1_c3:
-            st.markdown("""
-            <div class="insight-card" style="background-color: #F0FDF4;">
-                <div style="font-weight: 600; color: #166534; font-size:13px;">🟢 Optimize ordering frequency for Fresh category</div>
-                <div style="margin-top:20px;">
-                    <div class="insight-saving" style="color: #166534;">£1.2M</div>
-                    <div class="insight-label">Potential Waste Reduction</div>
-                </div>
-            </div>
-            """, unsafe_html=True)
+            st.markdown("""<div class="insight-card" style="background-color: #F0FDF4;"><div style="font-weight: 600; color: #166534; font-size:13px;">🟢 Optimize ordering frequency for Fresh category</div><div style="margin-top:20px;"><div class="insight-saving" style="color: #166534;">£1.2M</div><div class="insight-label">Potential Waste Reduction</div></div></div>""", unsafe_html=True)
 
-        st.write("") # Grid row spacer
-        
+        st.write("") 
         r2_c1, r2_c2, r2_c3 = st.columns(3)
         with r2_c1:
-            st.markdown("""
-            <div class="insight-card" style="background-color: #FFFBEB;">
-                <div style="font-weight: 600; color: #92400E; font-size:13px;">🟡 Consolidate distribution runs in London</div>
-                <div style="margin-top:20px;">
-                    <div class="insight-saving" style="color: #92400E;">£0.9M</div>
-                    <div class="insight-label">Potential Efficiency Gain</div>
-                </div>
-            </div>
-            """, unsafe_html=True)
+            st.markdown("""<div class="insight-card" style="background-color: #FFFBEB;"><div style="font-weight: 600; color: #92400E; font-size:13px;">🟡 Consolidate distribution runs in London</div><div style="margin-top:20px;"><div class="insight-saving" style="color: #92400E;">£0.9M</div><div class="insight-label">Potential Efficiency Gain</div></div></div>""", unsafe_html=True)
         with r2_c2:
-            st.markdown("""
-            <div class="insight-card" style="background-color: #EFF6FF;">
-                <div style="font-weight: 600; color: #1E40AF; font-size:13px;">🔵 Implement dynamic pricing for near-expiry stock</div>
-                <div style="margin-top:20px;">
-                    <div class="insight-saving" style="color: #1E40AF;">£3.1M</div>
-                    <div class="insight-label">Potential Recovery Improvement</div>
-                </div>
-            </div>
-            """, unsafe_html=True)
+            st.markdown("""<div class="insight-card" style="background-color: #EFF6FF;"><div style="font-weight: 600; color: #1E40AF; font-size:13px;">🔵 Implement dynamic pricing for near-expiry stock</div><div style="margin-top:20px;"><div class="insight-saving" style="color: #1E40AF;">£3.1M</div><div class="insight-label">Potential Recovery Improvement</div></div></div>""", unsafe_html=True)
         with r2_c3:
-            st.markdown("""
-            <div class="insight-card" style="background-color: #FFFBEB;">
-                <div style="font-weight: 600; color: #92400E; font-size:13px;">🟡 Reroute Fashion returns to secondary marketplace</div>
-                <div style="margin-top:20px;">
-                    <div class="insight-saving" style="color: #92400E;">£0.7M</div>
-                    <div class="insight-label">Potential Efficiency Gain</div>
-                </div>
-            </div>
-            """, unsafe_html=True)
+            st.markdown("""<div class="insight-card" style="background-color: #FFFBEB;"><div style="font-weight: 600; color: #92400E; font-size:13px;">🟡 Reroute Fashion returns to secondary marketplace</div><div style="margin-top:20px;"><div class="insight-saving" style="color: #92400E;">£0.7M</div><div class="insight-label">Potential Efficiency Gain</div></div></div>""", unsafe_html=True)
             
         st.write("")
         st.markdown("<p style='color:#2563EB; font-size:13px; font-weight:600; cursor:pointer;'>View all recommendations →</p>", unsafe_html=True)
+
+
+Fix Python 3.14 string type error
